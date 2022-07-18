@@ -18,6 +18,8 @@ export class Image extends NodeSchema {
       attrs: {
         imageUrl: { default: '' },
         altText: { default: null },
+        width: {default: null },
+        height: {default: null},
         rawHTML: { default: null },
         ...getDefaultCustomAttrs(),
       },
@@ -32,10 +34,14 @@ export class Image extends NodeSchema {
             const imageUrl = sanitizedDOM.getAttribute('src') || '';
             const rawHTML = sanitizedDOM.getAttribute('data-raw-html');
             const altText = sanitizedDOM.getAttribute('alt');
+            const width = sanitizedDOM.getAttribute('width');
+            const height = sanitizedDOM.getAttribute('height');
 
             return {
               imageUrl,
               altText,
+              width,
+              height,
               ...(rawHTML && { rawHTML }),
             };
           },
@@ -47,6 +53,8 @@ export class Image extends NodeSchema {
           {
             src: escapeXml(attrs.imageUrl),
             ...(attrs.altText && { alt: attrs.altText }),
+            ...(attrs.width && { width: attrs.width }),
+            ...(attrs.height && { height: attrs.height }),
             ...getCustomAttrs(attrs),
           },
         ];
@@ -56,7 +64,7 @@ export class Image extends NodeSchema {
 
   private addImage(): EditorCommand {
     return (payload) => ({ schema, tr }, dispatch) => {
-      const { imageUrl, altText } = payload!;
+      const { imageUrl, altText, width, height } = payload!;
 
       if (!imageUrl) {
         return false;
@@ -65,6 +73,8 @@ export class Image extends NodeSchema {
       const node = schema.nodes.image.createAndFill({
         imageUrl,
         ...(altText && { altText }),
+        ...(width && { width }),
+        ...(height && { height }),
       });
 
       dispatch!(tr.replaceSelectionWith(node!).scrollIntoView());
